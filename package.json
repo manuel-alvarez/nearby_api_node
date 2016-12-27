@@ -1,0 +1,31 @@
+{
+  "name": "nearby_api_node",
+  "version": "1.0.0",
+  "description": "Find nearby cities API",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "express": "^4.14.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manuel-alvarez/nearby_api_node.git"
+  },
+  "keywords": [
+    "cities",
+    "location",
+    "coordinates"
+  ],
+  "author": "manuel-alvarez",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/manuel-alvarez/nearby_api_node/issues"
+  },
+  "homepage": "https://github.com/manuel-alvarez/nearby_api_node#readme"
+}
