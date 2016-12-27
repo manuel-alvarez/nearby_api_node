@@ -1,6 +1,10 @@
 var express = require('express');
 var request = require('request');
+var bodyParser = require('body-parser');
 var app = express();
+
+// This seems to be needed to parse the body in JSON format in post routes
+app.use(bodyParser.json());
 
 var cities = {};  // cities is going to be a JS object
 var earth_radius = 6371;  // Kilometers
@@ -118,8 +122,87 @@ app.get('/cities', function(req, res) {
 	});
 });
 
-// start app
+app.post('/cities', function(req, res) {
+	// Adds a city to the list of available cities
+	// WARNING: Note that this city will not remain once the server is restarted
+	var city = req.body;
+	console.log('New city:');
+	console.log(city);
+	name = city.city;
+	if (name == null) {
+		res.json({
+			status: 'error',
+			text: 'Bad formatted city. You need to provide a "city" attribute with the city name.'
+		})
+		return;
+	}
+	if (city.lat == null || city.lon == null) {
+		res.json({
+			status: 'error',
+			text: 'Bad formatted city. You need to provide "lat" and "lon" attributes with city coordinates.'
+		});
+		return;
+	}
+	key = name.toLowerCase();
+	current_city = cities[key];
+	if (current_city != null) {
+		res.json({
+			status: 'error',
+			text: 'City with that key already exists, please change its name'
+		})
+		return
+	};
+	cities[key] = city;
+	res.json({
+		status: 'ok',
+		city: city
+	});
+});
 
+app.put('/cities/:id', function(req, res) {
+	// Updates a city with new data provided in POST body
+	// WARNING: Remember that changes are not permanent and original data will be restores once the server is restarted
+	var cityToUpdate = cities[req.params.id];
+	var city = req.body;
+
+	if (cityToUpdate != null) {
+		cityToUpdate = city;
+		cities[req.params.id] = cityToUpdate;
+
+		res.json({
+			status: 'ok',
+			city: cityToUpdate
+		});
+	} else {
+		res.json({
+			status: 'error',
+			text: 'City not found'
+		})
+	}
+});
+
+app.delete('/cities/:id', function(req, res) {
+	// Removes a city from the cities list. 
+	// WARNING: Remember that this method will not cause permanent changes and original list will be restored upon restart
+	var city = cities[req.params.id];
+
+	if (city != null) {
+		delete cities[req.params.id];
+
+		res.json({
+			status: 'ok',
+			city: city
+		});
+	} else {
+		res.json({
+			status: 'error',
+			text: 'City not found'
+		})
+	}
+});
+
+// start app
+// First, load JSON from github gist. On callback, start server (only if cities are loaded, there won't be much data to use in any other case)
 request.get({
 	url: 'https://gist.githubusercontent.com/manuel-alvarez/20a7e013765a4361de9c3ae621a7efe2/raw/0ee93d11990f1291fd14ac2773935d7c0269f941/cities-of-the-world',
 	json: true
@@ -128,6 +211,7 @@ request.get({
 		cities = body;
 		console.log('Cities loaded, starting server');
 		app.listen('3000', function() {
+			// Show the user that the server is ready, just in case the connection is slow
 			console.log("Server ready at http://localhost:3000")
 		});
 	} else {
